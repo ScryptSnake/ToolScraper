@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ToolScraper.Core;
+using ToolScraper.Core.Products;
 using ToolScraper.Core.Types;
 
 /// <summary>
@@ -18,11 +18,8 @@ public record EndMill(
     Uri? Url,
 
     // Tool
-    ToolTypes ToolType,
-    WorkCenterTypes WorkCenterType,
     MaterialTypes Material,
     string MaterialDescription,
-    bool Indexable,
 
     // End Mill
     int FluteCount,
@@ -32,4 +29,10 @@ public record EndMill(
     decimal OverallLength,
     decimal CornerRadius,
     string Iso
-) : IEndMill;
+) : IEndMill
+{
+    // Default properties for ITool implementation:
+    public bool Indexable { get; init; } = false;
+    public ToolTypes ToolType { get; init; } = ToolTypes.Cutter;
+    public WorkCenterTypes WorkCenterType { get; init; } = WorkCenterTypes.Milling;
+}

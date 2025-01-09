@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ToolScraper.Core.Types;
 
-namespace ToolScraper.Core;
+namespace ToolScraper.Core.Products;
 
 /// <summary>
 /// Represents the high level details about a product/item.
