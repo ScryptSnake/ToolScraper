@@ -24,6 +24,7 @@ public interface IProduct
 /// </summary>
 public interface ITool: IProduct
 {
+    string Iso { get; init; }   
     ToolTypes ToolType { get; init; }
     WorkCenterTypes WorkCenterType { get;init; }
     MaterialTypes Material { get; init; }
@@ -36,6 +37,11 @@ public interface ITool: IProduct
 /// </summary>
 public interface IEndMill: ITool
 {
-    
+    int FluteCount { get; init; } 
+    decimal CuttingDiameter { get; init; }  
+    decimal ShankDiameter { get; init; }
+    decimal EffectiveLength { get; init; }
+    decimal OverallLength { get; init; }
+    decimal CornerRadius { get; init; }
 
 }
