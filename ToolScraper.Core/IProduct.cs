@@ -19,29 +19,3 @@ public interface IProduct
     Uri? Url { get; init; }
 }
 
-/// <summary>
-/// Represents a generic tool object, a specialized form of a product. 
-/// </summary>
-public interface ITool: IProduct
-{
-    string Iso { get; init; }   
-    ToolTypes ToolType { get; init; }
-    WorkCenterTypes WorkCenterType { get;init; }
-    MaterialTypes Material { get; init; }
-    string MaterialDescription { get; init; }
-    bool Indexable { get; init; }
-}
-
-/// <summary>
-/// Represents a specific tool:  Milling Tool. 
-/// </summary>
-public interface IEndMill: ITool
-{
-    int FluteCount { get; init; } 
-    decimal CuttingDiameter { get; init; }  
-    decimal ShankDiameter { get; init; }
-    decimal EffectiveLength { get; init; }
-    decimal OverallLength { get; init; }
-    decimal CornerRadius { get; init; }
-
-}
