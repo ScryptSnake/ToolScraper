@@ -11,9 +11,9 @@ namespace ToolScraper.Core.Scrapers
     /// A generic interface to which a Scraper for a specific type must adhere. 
     /// </summary>
     /// <typeparam name="T"> The object to scrape. </typeparam>
-    public interface IScraper<T>
+    public interface IScraper<T> where T: class
     {
-        public Uri Url { get; init; }
+        public Uri Url { get;}
 
         public ScraperResult<T> Scrape();
 
