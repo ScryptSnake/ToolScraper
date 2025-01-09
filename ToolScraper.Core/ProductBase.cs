@@ -3,36 +3,39 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ToolScraper.Core.Types;
 
 namespace ToolScraper.Core;
-
 
 /// <summary>
 /// Represents the high level details about a product/item.
 /// </summary>
-public abstract class ProductBase
+public interface IProduct
 {
-    public required string Id { get; init; }
-    public required string Description { get; init; }
-    public required string Country { get; init; }
-    public decimal Weight { get; init; }
-    public Uri? Url { get; init; }
+    string Id { get; init; }
+    string Description { get; init; }
+    string Country { get; init; }
+    decimal Weight { get; init; }
+    Uri? Url { get; init; }
 }
 
-public abstract class Tool : ProductBase
+/// <summary>
+/// Represents a generic tool object, a specialized form of a product. 
+/// </summary>
+public interface ITool: IProduct
 {
-    public required string Material { get; init; }
-    public required string Description { get; init; }
-    public required string Country { get; init; }
-    public decimal Weight { get; init; }
-    public Uri? Url { get; init; }
+    ToolTypes ToolType { get; init; }
+    WorkCenterTypes WorkCenterType { get;init; }
+    MaterialTypes Material { get; init; }
+    string MaterialDescription { get; init; }
+    bool Indexable { get; init; }
 }
 
-public abstract class MillingTool
+/// <summary>
+/// Represents a specific tool:  Milling Tool. 
+/// </summary>
+public interface IEndMill: ITool
 {
-    public required string Id { get; init; }
-    public required string Description { get; init; }
-    public required string Country { get; init; }
-    public decimal Weight { get; init; }
-    public Uri? Url { get; init; }
+    
+
 }

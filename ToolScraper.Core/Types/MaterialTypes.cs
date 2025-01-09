@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace ToolScraper.Core.Types;
 
-public enum ToolTypes
+public enum MaterialTypes
 {
-    Cutter, Holder, Insert, Hardware, Other
-
+    Steel,
+    HSS,
+    Carbide,
+    Diamond,
+    Ceramic
 }
