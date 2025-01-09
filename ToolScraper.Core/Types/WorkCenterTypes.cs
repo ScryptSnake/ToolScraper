@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ToolScraper.Core.Types;
 
-public enum ToolType
+public enum WorkCenterTypes
 {
-    Cutter, Holder, Fixture, Other
+    Milling, Turning, Other
 
 }
