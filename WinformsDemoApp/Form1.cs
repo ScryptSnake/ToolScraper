@@ -6,5 +6,10 @@ namespace WinformsDemoApp
         {
             InitializeComponent();
         }
+
+        private void bSearch_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
