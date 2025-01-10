@@ -19,6 +19,9 @@ namespace ToolScraper.Core.Scrapers
     {
         private const string BASE_URL = "https://www.kennametal.com/us/en/products/";
         private HttpClient Client { get; }
+        private Uri? Uri { get; set; }
+
+
 
         /// <summary>
         /// Instantiates a new EndMillScraper. 
@@ -28,6 +31,7 @@ namespace ToolScraper.Core.Scrapers
         public EndMillScraper(HttpClient client)
         {
             Client = client;
+            Uri = null; 
         }
 
 
@@ -92,16 +96,35 @@ namespace ToolScraper.Core.Scrapers
             throw new NotImplementedException();
         }
 
+        public async Task<ScraperResult<EndMill>> ScrapeAsync(string parameter)
+        {
+            try
+            {
+                var endmill = await RunScrapeAsync(parameter);
+                return new ScraperResult<EndMill>(true, endmill, Uri, null);
+            }
+            catch (Exception ex)
+            {
+                return new ScraperResult<EndMill>(false,null,Uri,ex.Message);
+            }
+
+        }
+
+
+
         /// <summary>
         /// Scrape and assemble an Endmill. 
         /// This only works for Flat Endmills from Kennametal. 
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        public async Task<ScraperResult<EndMill>> ScrapeAsync(string parameter)
+        private async Task<EndMill> RunScrapeAsync(string parameter)
         {
+
             // Assemble a URL for the request. parameter = KMT number.
+            // Set class property.
             var url = $"{BASE_URL}/p.{parameter}.html";
+            this.Uri = new Uri(url);
 
             // Grab the .html body from Response.
             var response = await Client.GetStringAsync(url);
@@ -169,23 +192,15 @@ namespace ToolScraper.Core.Scrapers
 
             );
 
-
-            Console.WriteLine(endmill.ToString());
-
-
-            // temporary - keep compiler happy. 
-            return new ScraperResult<EndMill>(true, endmill, new Uri(url), null);
-
-
-
+            return endmill;
         }
 
-        public ScraperResult<EndMill> ScrapeMultiple(string[]? parameters = null)
+        public ScraperResult<EndMill> ScrapeMultiple(string[] parameters)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<ScraperResult<EndMill>> ScrapeMultipleAsync(string[]? parameters = null)
+        public async Task<ScraperResult<EndMill>> ScrapeMultipleAsync(string[] parameters)
         {
             throw new NotImplementedException();
         }
