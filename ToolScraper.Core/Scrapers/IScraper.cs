@@ -13,11 +13,11 @@ namespace ToolScraper.Core.Scrapers
     /// <typeparam name="T"> The object to scrape. </typeparam>
     public interface IScraper<T> where T: class
     {
-        public Uri Url { get;}
+        public ScraperResult<T> Scrape(string parameter);
+        public Task<ScraperResult<T>> ScrapeAsync(string parameter);
 
-        public ScraperResult<T> Scrape();
-
-        public Task<ScraperResult<T>> ScrapeAsync();
+        public ScraperResult<T> ScrapeMultiple(string[]? parameters = null);
+        public Task<ScraperResult<T>> ScrapeMultipleAsync(string[]? parameters = null);
 
     }
 }
