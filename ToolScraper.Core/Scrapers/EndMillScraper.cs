@@ -101,21 +101,18 @@ namespace ToolScraper.Core.Scrapers
 
             Console.WriteLine("TITLE = " + description);
 
-            // Grab image urls.
+            // Search for product images.
+            var node = html.DocumentNode.SelectSingleNode
+                ("//div[contains(@class, 'section-content')]");
+            var imageNodes = node.SelectNodes(".//img");
+
+            // Grab image urls, put into Uri array, 
+            var imageUris = imageNodes
+                .Select(img => new Uri(img.GetAttributeValue("src", string.Empty)))
+                .ToArray();
 
 
-            var imageNodes = html.DocumentNode.SelectSingleNode
-                ("//div[contains(@class, 'slick-list-draggable')]");
-            var moreNode = imageNodes.SelectNodes(".//img");
-
-
-            //foreach (var img in imageNodes)
-            //{
-            //    Console.WriteLine(img.GetAttributeValue("src", "Not Found"));
-            //}
-
-
-            // Find the spec table in the doc body. It contains a css class 'p-esp-table'
+            // Find the spec table in the doc body
             var xPath = "//table[contains(@class, 'p-esp-table')]/tbody";
             var tableNode = html.DocumentNode.SelectSingleNode(xPath);
 
