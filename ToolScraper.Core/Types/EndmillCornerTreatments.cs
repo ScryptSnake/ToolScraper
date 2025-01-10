@@ -12,6 +12,6 @@ namespace ToolScraper.Core.Types;
 /// </summary>
 public enum EndMillCornerTreatments
 {
-   Square, EdgeBreak, Radius
+   Sharp, EdgeBreak, Radius
 
 }

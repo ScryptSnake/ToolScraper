@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
+using ToolScraper.Core.Types;
+
 namespace ToolScraper.Core.Scrapers
 {
 
@@ -68,13 +70,20 @@ namespace ToolScraper.Core.Scrapers
         // A helper function to get a spec (key) from the dictionary,
         // Finds matches that 'contain' the provided specName parameter. 
         // Casts the string value in the dict to the specified type. 
-        private T? FindItem<T>(IDictionary<string,string> dict, string specName)
+        private T FindItem<T>(IDictionary<string,string> dict, string specName, T defaultValue)
         {
-            string key = dict.Keys.First(key => key.Contains(specName));
-            if (key == null) throw new KeyNotFoundException(specName);
-            // Cast the dictionary value and return. 
-            return (T)Convert.ChangeType(dict[key], typeof(T));
+            var key = dict.Keys.FirstOrDefault(key => key.Contains(specName));
+            if (key == default)
+            {
+                Console.WriteLine("KEY = " + specName);
+                return defaultValue; //Not found
+            }
+
+            // Cast the dictionary value (string) to T and return. 
+            var value = (T)Convert.ChangeType(dict[key], typeof(T));
+            return value;
         }
+
 
 
 
@@ -83,6 +92,12 @@ namespace ToolScraper.Core.Scrapers
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Scrape and assemble an Endmill. 
+        /// This only works for Flat Endmills from Kennametal. 
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
         public async Task<ScraperResult<EndMill>> ScrapeAsync(string parameter)
         {
             // Assemble a URL for the request. parameter = KMT number.
@@ -95,11 +110,14 @@ namespace ToolScraper.Core.Scrapers
             var html = new HtmlDocument();
             html.LoadHtml(response);
 
-            // Grab description
+            // Grab name
             var description = html.DocumentNode.SelectSingleNode
                 ("//div[contains(@class, 'product-title')]/h1").InnerText ?? "Unknown";
 
-            Console.WriteLine("TITLE = " + description);
+            // Grab description
+            var name = html.DocumentNode.SelectSingleNode
+                ("//div[contains(@class, 'product-subtitle')]/h2").InnerText ?? "Unknown";
+
 
             // Search for product images.
             var node = html.DocumentNode.SelectSingleNode
@@ -111,7 +129,6 @@ namespace ToolScraper.Core.Scrapers
                 .Select(img => new Uri(img.GetAttributeValue("src", string.Empty)))
                 .ToArray();
 
-
             // Find the spec table in the doc body
             var xPath = "//table[contains(@class, 'p-esp-table')]/tbody";
             var tableNode = html.DocumentNode.SelectSingleNode(xPath);
@@ -120,20 +137,44 @@ namespace ToolScraper.Core.Scrapers
             var specs = await ParseTableAsync(tableNode);
             Console.WriteLine(String.Join("-", specs));
 
-            //// Assemble EndMill item..
-            //var endmill = new EndMill()
-            //{
-            //    Id = parameter,
-            //    Description = 
+            // Find the corner treatment type.
+            // Appears that Kennametal only offers radius or sharp.
+            // Check if corner rad included in spec table, else = flat. 
+            var cornerType = EndMillCornerTreatments.Sharp;
+            var cornerRad = FindItem<decimal>(specs, "[Re]", 0);
+            if(cornerRad==0)
+                cornerType = EndMillCornerTreatments.Sharp;
 
-            //}
+            // Assemble EndMill item..
+            var endmill = new EndMill(
+            
+                Id: parameter,
+                Name: name,
+                Description: description,
+                Country: "USA",
+                Weight: 0,
+                Url: new Uri(url),
+                Media: imageUris ?? Array.Empty<Uri>(), // Handle null for Media if necessary
+                Material: MaterialTypes.Carbide,
+                MaterialDescription: FindItem<string>(specs, "Grade", ""),
+                FluteCount: FindItem<int>(specs, "[Z]", 0),
+                CuttingDiameter: FindItem<decimal>(specs, "[D1]", 0),
+                ShankDiameter: FindItem<decimal>(specs, "[D]", 0),
+                EffectiveLength: FindItem<decimal>(specs, "[L3]", 0),
+                OverallLength: FindItem<decimal>(specs, "[L]", 0),
+                CornerTreatment: cornerType,
+                CornerRadius: cornerRad,
+                CornerEdgeBreak: 0,
+                Iso: FindItem<string>(specs, "ISO Catalog ID", "")
+
+            );
 
 
-
+            Console.WriteLine(endmill.ToString());
 
 
             // temporary - keep compiler happy. 
-            return new ScraperResult<EndMill>(false, null, null, null);
+            return new ScraperResult<EndMill>(true, endmill, new Uri(url), null);
 
 
 

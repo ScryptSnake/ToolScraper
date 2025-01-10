@@ -29,7 +29,10 @@ public record EndMill(
     decimal ShankDiameter,
     decimal EffectiveLength,
     decimal OverallLength,
+    EndMillCornerTreatments CornerTreatment,
+    decimal CornerEdgeBreak,
     decimal CornerRadius,
+
     string Iso
 ) : IEndMill
 {
