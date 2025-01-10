@@ -17,6 +17,9 @@ public interface IEndMill : ITool
     decimal ShankDiameter { get; init; }
     decimal EffectiveLength { get; init; }
     decimal OverallLength { get; init; }
+    EndMillCornerTreatments CornerTreatment { get; init; }  
     decimal CornerRadius { get; init; }
+    decimal CornerEdgeBreak { get;init; }
+
 
 }

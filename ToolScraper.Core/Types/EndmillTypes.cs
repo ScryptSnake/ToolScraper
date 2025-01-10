@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ToolScraper.Core.Types;
 
-public enum EndmillTypes
+public enum EndMillTypes
 {
     Flat, BullNose, Ball, Relieved
 
