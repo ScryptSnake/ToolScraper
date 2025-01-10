@@ -13,9 +13,11 @@ namespace ToolScraper.Core.Products;
 public interface IProduct
 {
     string Id { get; init; }
+    string Name { get; init; }
     string Description { get; init; }
     string Country { get; init; }
     decimal Weight { get; init; }
     Uri? Url { get; init; }
+    Uri[]? Media { get; init; }
 }
 

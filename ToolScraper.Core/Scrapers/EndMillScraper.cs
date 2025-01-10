@@ -65,6 +65,18 @@ namespace ToolScraper.Core.Scrapers
             return new ReadOnlyDictionary<string, string>(output);
         }
 
+        // A helper function to get a spec (key) from the dictionary,
+        // Finds matches that 'contain' the provided specName parameter. 
+        // Casts the string value in the dict to the specified type. 
+        private T? FindItem<T>(IDictionary<string,string> dict, string specName)
+        {
+            string key = dict.Keys.First(key => key.Contains(specName));
+            if (key == null) throw new KeyNotFoundException(specName);
+            // Cast the dictionary value and return. 
+            return (T)Convert.ChangeType(dict[key], typeof(T));
+        }
+
+
 
         public ScraperResult<EndMill> Scrape(string parameter)
         {
@@ -83,14 +95,41 @@ namespace ToolScraper.Core.Scrapers
             var html = new HtmlDocument();
             html.LoadHtml(response);
 
+            // Grab description
+            var description = html.DocumentNode.SelectSingleNode
+                ("//div[contains(@class, 'product-title')]/h1").InnerText ?? "Unknown";
+
+            Console.WriteLine("TITLE = " + description);
+
+            // Grab image urls.
+
+
+            var imageNodes = html.DocumentNode.SelectSingleNode
+                ("//div[contains(@class, 'slick-list-draggable')]");
+            var moreNode = imageNodes.SelectNodes(".//img");
+
+
+            //foreach (var img in imageNodes)
+            //{
+            //    Console.WriteLine(img.GetAttributeValue("src", "Not Found"));
+            //}
+
+
             // Find the spec table in the doc body. It contains a css class 'p-esp-table'
             var xPath = "//table[contains(@class, 'p-esp-table')]/tbody";
             var tableNode = html.DocumentNode.SelectSingleNode(xPath);
 
-            // Assemble an endmill from the table of specs:
+            // Get a dictionary of specs from the table node
             var specs = await ParseTableAsync(tableNode);
             Console.WriteLine(String.Join("-", specs));
 
+            //// Assemble EndMill item..
+            //var endmill = new EndMill()
+            //{
+            //    Id = parameter,
+            //    Description = 
+
+            //}
 
 
 

@@ -12,10 +12,12 @@ using ToolScraper.Core.Types;
 public record EndMill(
     // Product
     string Id,
+    string Name,
     string Description,
     string Country,
     decimal Weight,
     Uri? Url,
+    Uri[]? Media, 
 
     // Tool
     MaterialTypes Material,
