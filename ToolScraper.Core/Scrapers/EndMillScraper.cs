@@ -8,20 +8,19 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-
 using ToolScraper.Core.Types;
 
 namespace ToolScraper.Core.Scrapers
 {
-
-    // Scrapes the kennametal website for an endmill. 
+    /// <summary>
+    /// Scrapes the Kennametal website and acquires tooling data about an end mill. 
+    /// These methods take a KMT number as a parameter argument. 
+    /// </summary>
     public class EndMillScraper : IScraper<EndMill>
     {
         private const string BASE_URL = "https://www.kennametal.com/us/en/products/";
         private HttpClient Client { get; }
         private Uri? Uri { get; set; }
-
-
 
         /// <summary>
         /// Instantiates a new EndMillScraper. 
@@ -34,63 +33,6 @@ namespace ToolScraper.Core.Scrapers
             Uri = null; 
         }
 
-
-        // Helper method - Assembles a dictionary of specs found in the tableNode
-        private async Task<ReadOnlyDictionary<string,string>> ParseTableAsync(HtmlNode tableNode)
-        {
-            var output = new Dictionary<string, string>();
-
-            // Select all the tables rows in tableNode.
-            var nodes = tableNode.SelectNodes(".//tr");
-
-            // Loop through each row, there are 2 <td>s for every row.
-            // First is spec, second is value. 
-            // There are 2 rows for a single spec (inch and metric)
-            foreach (var node in nodes)
-            {
-                var rowData = node.SelectNodes("td");
-                var spec = rowData[0].InnerText.Trim();
-                var value = rowData[1].InnerText.Trim();
-
-                // Check units, strip or ignore accordingly.
-                if (value.Length >= 3)
-                {
-                    var units = value.Substring(value.Length - 3);
-                    if (units == " in")
-                    {
-                        // strip inch. 
-                        value = value.Substring(0, value.Length - 3);   
-                    }else if (units == " mm")
-                    {
-                        continue; // ignore metrics. 
-                    }
-                }
-
-                output.Add(spec, value);
-            }
-            return new ReadOnlyDictionary<string, string>(output);
-        }
-
-        // A helper function to get a spec (key) from the dictionary,
-        // Finds matches that 'contain' the provided specName parameter. 
-        // Casts the string value in the dict to the specified type. 
-        private T FindItem<T>(IDictionary<string,string> dict, string specName, T defaultValue)
-        {
-            var key = dict.Keys.FirstOrDefault(key => key.Contains(specName));
-            if (key == default)
-            {
-                Console.WriteLine("KEY = " + specName);
-                return defaultValue; //Not found
-            }
-
-            // Cast the dictionary value (string) to T and return. 
-            var value = (T)Convert.ChangeType(dict[key], typeof(T));
-            return value;
-        }
-
-
-
-
         public ScraperResult<EndMill> Scrape(string parameter)
         {
             throw new NotImplementedException();
@@ -100,24 +42,20 @@ namespace ToolScraper.Core.Scrapers
         {
             try
             {
+                Console.WriteLine("Runing scrape async...");
                 var endmill = await RunScrapeAsync(parameter);
                 return new ScraperResult<EndMill>(true, endmill, Uri, null);
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Failed..");
                 return new ScraperResult<EndMill>(false,null,Uri,ex.Message);
             }
-
         }
 
-
-
-        /// <summary>
-        /// Scrape and assemble an Endmill. 
-        /// This only works for Flat Endmills from Kennametal. 
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
+        
+        // Runs a scrape task on the Kennametal website. 
+        // Parameter is KMT number of tool. 
         private async Task<EndMill> RunScrapeAsync(string parameter)
         {
 
@@ -147,7 +85,7 @@ namespace ToolScraper.Core.Scrapers
                 ("//div[contains(@class, 'section-content')]");
             var imageNodes = node.SelectNodes(".//img");
 
-            // Grab image urls, put into Uri array, 
+            // Grab image urls, put into Uri array.
             var imageUris = imageNodes
                 .Select(img => new Uri(img.GetAttributeValue("src", string.Empty)))
                 .ToArray();
@@ -161,7 +99,7 @@ namespace ToolScraper.Core.Scrapers
             Console.WriteLine(String.Join("-", specs));
 
             // Find the corner treatment type.
-            // Appears that Kennametal only offers radius or sharp.
+            // Appears that Kennametal only offers radius or sharp endmills. 
             // Check if corner rad included in spec table, else = flat. 
             var cornerType = EndMillCornerTreatments.Sharp;
             var cornerRad = FindItem<decimal>(specs, "[Re]", 0);
@@ -170,7 +108,6 @@ namespace ToolScraper.Core.Scrapers
 
             // Assemble EndMill item..
             var endmill = new EndMill(
-            
                 Id: parameter,
                 Name: name,
                 Description: description,
@@ -189,7 +126,6 @@ namespace ToolScraper.Core.Scrapers
                 CornerRadius: cornerRad,
                 CornerEdgeBreak: 0,
                 Iso: FindItem<string>(specs, "ISO Catalog ID", "")
-
             );
 
             return endmill;
@@ -203,6 +139,63 @@ namespace ToolScraper.Core.Scrapers
         public async Task<ScraperResult<EndMill>> ScrapeMultipleAsync(string[] parameters)
         {
             throw new NotImplementedException();
+        }
+
+
+        // Helper method - Assembles a dictionary of specs found in the tableNode
+        private async Task<ReadOnlyDictionary<string, string>> ParseTableAsync(HtmlNode tableNode)
+        {
+            var output = new Dictionary<string, string>();
+
+            // Select all the tables rows in tableNode.
+            var nodes = tableNode.SelectNodes(".//tr");
+
+            // Loop through each row, there are 2 <td>s for every row.
+            // First is spec, second is value. 
+            // There are 2 rows for a single spec (inch and metric)
+            foreach (var node in nodes)
+            {
+                var rowData = node.SelectNodes("td");
+                var spec = rowData[0].InnerText.Trim();
+                var value = rowData[1].InnerText.Trim();
+
+                // Check units, strip or ignore accordingly.
+                if (value.Length >= 3)
+                {
+                    var units = value.Substring(value.Length - 3);
+                    if (units == " in")
+                    {
+                        // Strip inch. 
+                        value = value.Substring(0, value.Length - 3);
+                    }
+                    else if (units == " mm")
+                    {
+                        continue; // Ignore metric. 
+                    }
+                }
+
+                output.Add(spec, value);
+            }
+            return new ReadOnlyDictionary<string, string>(output);
+        }
+
+
+        // A helper function to get a spec (key) from the dictionary,
+        // Finds matches that contain the provided specName parameter. 
+        // Casts the string value in the dict to the specified type. 
+        // Returns default value if not found.
+        private T FindItem<T>(IDictionary<string, string> dict, string specName, T defaultValue)
+        {
+            var key = dict.Keys.FirstOrDefault(key => key.Contains(specName));
+            if (key == default)
+            {
+                Console.WriteLine("KEY = " + specName);
+                return defaultValue; //Not found
+            }
+
+            // Cast the dictionary value (string) to T and return. 
+            var value = (T)Convert.ChangeType(dict[key], typeof(T));
+            return value;
         }
     }
 }
